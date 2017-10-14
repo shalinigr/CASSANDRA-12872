@@ -389,11 +389,10 @@ public class DataResolver extends ResponseResolver
         	//step 2: Apply transformation on the extended partition
         	//step 3: Apply transformation with the corrected counter
         	
-        	// must apply and extend with same protection instance 
-            partition = MoreRows.extend(partition, protection);
-            partition = Transformation.apply(partition, protection); // apply after, so it is retained when we extend (in case we need to reextend)
-            partition = Transformation.apply(partition, counter);
-            return partition;
+        	// must apply and extend with same protection instance
+            partition = Transformation.apply(MoreRows.extend(partition, protection), protection); // apply after, so it is retained when we extend (in case we need to reextend)
+            return Transformation.apply(partition, counter);
+          
         }
 
         private class ShortReadRowProtection extends Transformation implements MoreRows<UnfilteredRowIterator>
