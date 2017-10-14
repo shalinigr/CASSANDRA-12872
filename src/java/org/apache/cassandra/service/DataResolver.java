@@ -382,11 +382,17 @@ public class DataResolver extends ResponseResolver
         @Override
         public UnfilteredRowIterator applyToPartition(UnfilteredRowIterator partition)
         {
-            partition = Transformation.apply(partition, counter);
-            // must apply and extend with same protection instance
-            ShortReadRowProtection protection = new ShortReadRowProtection(partition.metadata(), partition.partitionKey());
+        	ShortReadRowProtection protection = new ShortReadRowProtection(partition.metadata(), partition.partitionKey());
+              
+        	//Cassandra 12872 - fix the order of invocation of functions to fix counter value for short read
+        	//step 1 : extend first in order to set the counter to the right value in moreContents()
+        	//step 2: Apply transformation on the extended partition
+        	//step 3: Apply transformation with the corrected counter
+        	
+        	// must apply and extend with same protection instance 
             partition = MoreRows.extend(partition, protection);
             partition = Transformation.apply(partition, protection); // apply after, so it is retained when we extend (in case we need to reextend)
+            partition = Transformation.apply(partition, counter);
             return partition;
         }
 
